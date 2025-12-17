@@ -29,3 +29,21 @@ No ML libraries like Surprise or implicit were used — everything is implemente
 ---
 
 ## 📂 Project Structure
+recommendation-system/
+│
+├── data/
+│   ├── u.data
+│   ├── u.item
+│
+├── src/
+│   ├── similarity.py
+│   ├── user_based_cf.py
+│   ├── item_based_cf.py
+│   ├── matrix_builder.py
+│   └── data_loader.py
+│
+├── main.py
+├── requirements.txt
+├── .gitignore
+└── README.md
+
