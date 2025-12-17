@@ -14,6 +14,12 @@ No ML libraries like Surprise or implicit were used — everything is implemente
 ---
 
 ## 📊 Dataset
+### Dataset
+
+Download MovieLens 100K dataset from [here](https://grouplens.org/datasets/movielens/100k/)
+
+Place the `u.data` and `u.item` files inside a `data/` folder in the project root.
+
 - **MovieLens 100K**
 - 100,000 ratings
 - 943 users
