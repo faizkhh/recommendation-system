@@ -28,7 +28,7 @@ movies = pd.read_csv(
 print("Data loaded")
 
 # -----------------------------
-# User-Item Matrix
+# Build user-item matrix
 # -----------------------------
 user_item_matrix = ratings.pivot(
     index="user_id",
@@ -46,9 +46,9 @@ user_mean = np.mean(R, axis=1)
 R_demeaned = R - user_mean.reshape(-1, 1)
 
 # -----------------------------
-# Truncated SVD (FAST)
+# Truncated SVD
 # -----------------------------
-k = 20   # keep it small for speed
+k = 50  # increase components for better accuracy
 U, sigma, Vt = np.linalg.svd(R_demeaned, full_matrices=False)
 sigma = np.diag(sigma[:k])
 U = U[:, :k]
@@ -57,37 +57,72 @@ Vt = Vt[:k, :]
 print("SVD completed")
 
 # -----------------------------
-# Predictions
+# Predicted ratings
 # -----------------------------
 predicted_ratings = np.dot(np.dot(U, sigma), Vt) + user_mean.reshape(-1, 1)
-
 preds_df = pd.DataFrame(
     predicted_ratings,
     index=user_item_matrix.index,
     columns=user_item_matrix.columns
 )
 
+# Clip ratings to 1-5
+preds_df = preds_df.clip(1, 5)
+
 # -----------------------------
-# Recommend function
+# Recommend movies function
 # -----------------------------
-def recommend_movies(user_id, n=5):
+def recommend_movies_svd(user_id, movies_df, preds_df, n_recommendations=5):
     user_preds = preds_df.loc[user_id]
     watched = ratings[ratings.user_id == user_id].movie_id.tolist()
 
     recommendations = (
         user_preds.drop(watched)
         .sort_values(ascending=False)
-        .head(n)
+        .head(n_recommendations)
     )
 
-    print(f"\nTop {n} recommendations for User {user_id}:\n")
+    results = []
+    for movie_id, rating in recommendations.items():
+        title = movies_df.loc[movies_df.movie_id == movie_id, "title"].values[0]
+        results.append((title, rating))
 
-    for i, movie_id in enumerate(recommendations.index, 1):
-        title = movies.loc[movies.movie_id == movie_id, "title"].values[0]
-        print(f"{i}. {title}")
+    return results
+
+# -----------------------------
+# RMSE evaluation
+# -----------------------------
+def calculate_rmSE(preds_df, ratings_df):
+    actual = []
+    predicted = []
+
+    for row in ratings_df.itertuples():
+        user_id = row.user_id
+        movie_id = row.movie_id
+        rating = row.rating
+
+        pred_rating = preds_df.loc[user_id, movie_id]
+
+        actual.append(rating)
+        predicted.append(pred_rating)
+
+    actual = np.array(actual)
+    predicted = np.array(predicted)
+
+    rmse = np.sqrt(np.mean((actual - predicted) ** 2))
+    return rmse
 
 # -----------------------------
 # MAIN
 # -----------------------------
 if __name__ == "__main__":
-    recommend_movies(196)
+    user_id = 196
+    recommendations = recommend_movies_svd(user_id, movies, preds_df, n_recommendations=5)
+
+    print(f"\nTop 5 recommendations for User {user_id}:\n")
+    for i, (movie, rating) in enumerate(recommendations, 1):
+        print(f"{i}. {movie} → Predicted Rating: {rating:.2f}")
+
+    # Calculate RMSE
+    rmse = calculate_rmSE(preds_df, ratings)
+    print(f"\nRMSE of SVD Model: {rmse:.4f}")
