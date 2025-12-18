@@ -1,12 +1,13 @@
 # recommendation-system
-A movie recommendation system built **from scratch** using the MovieLens 100K dataset.  
-No ML libraries like Surprise or implicit were used — everything is implemented manually using NumPy and Pandas.
+A movie recommendation system using the MovieLens 100K dataset.  
+Implemented User-Based CF, Item-Based CF, and SVD-based Matrix Factorization 
 
 ---
 
 ## 🚀 Features
 - User-Based Collaborative Filtering
 - Item-Based Collaborative Filtering
+- Matrix Factorization using **SVD**
 - Cosine Similarity & Pearson Correlation
 - Sparse User–Item Matrix handling
 - Optimized for low-end systems
